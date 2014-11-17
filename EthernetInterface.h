@@ -16,7 +16,7 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
- 
+
 #ifndef ETHERNETINTERFACE_H_
 #define ETHERNETINTERFACE_H_
 
@@ -24,7 +24,6 @@
 #error The Ethernet Interface library is not supported on this target
 #endif
 
-#include "rtos.h"
 #include "lwip/netif.h"
 
  /** Interface using Ethernet to connect to an IP-based network
@@ -53,18 +52,18 @@ public:
   * \return 0 on success, a negative number on failure
   */
   static int connect(unsigned int timeout_ms=15000);
-  
+
   /** Disconnect
   * Bring the interface down
   * \return 0 on success, a negative number on failure
   */
   static int disconnect();
-  
+
   /** Get the MAC address of your Ethernet interface
    * \return a pointer to a string containing the MAC address
    */
   static char* getMACAddress();
-  
+
   /** Get the IP address of your Ethernet interface
    * \return a pointer to a string containing the IP address
    */

@@ -36,37 +36,21 @@ static char gateway[17] = "\0";
 static char networkmask[17] = "\0";
 static bool use_dhcp = false;
 
-static Semaphore tcpip_inited(0);
-static Semaphore netif_linked(0);
-static Semaphore netif_up(0);
-
-static void tcpip_init_done(void *arg) {
-    tcpip_inited.release();
-}
-
 static void netif_link_callback(struct netif *netif) {
-    if (netif_is_link_up(netif)) {
-        netif_linked.release();
-    }
+    // TODO: implement this
 }
 
 static void netif_status_callback(struct netif *netif) {
-    if (netif_is_up(netif)) {
-        strcpy(ip_addr, inet_ntoa(netif->ip_addr));
-        strcpy(gateway, inet_ntoa(netif->gw));
-        strcpy(networkmask, inet_ntoa(netif->netmask));
-        netif_up.release();
-    }
+    // TODO: implement this
 }
 
 static void init_netif(ip_addr_t *ipaddr, ip_addr_t *netmask, ip_addr_t *gw) {
-    tcpip_init(tcpip_init_done, NULL);
-    tcpip_inited.wait();
-    
+    // TODO: proper initialization
+
     memset((void*) &netif, 0, sizeof(netif));
-    netif_add(&netif, ipaddr, netmask, gw, NULL, eth_arch_enetif_init, tcpip_input);
+    netif_add(&netif, ipaddr, netmask, gw, NULL, eth_arch_enetif_init, ip_input);
     netif_set_default(&netif);
-    
+
     netif_set_link_callback  (&netif, netif_link_callback);
     netif_set_status_callback(&netif, netif_status_callback);
 }
@@ -91,37 +75,39 @@ int EthernetInterface::init() {
 
 int EthernetInterface::init(const char* ip, const char* mask, const char* gateway) {
     use_dhcp = false;
-    
+
     set_mac_address();
     strcpy(ip_addr, ip);
-    
+
     ip_addr_t ip_n, mask_n, gateway_n;
     inet_aton(ip, &ip_n);
     inet_aton(mask, &mask_n);
     inet_aton(gateway, &gateway_n);
     init_netif(&ip_n, &mask_n, &gateway_n);
-    
+
     return 0;
 }
 
 int EthernetInterface::connect(unsigned int timeout_ms) {
     eth_arch_enable_interrupts();
 
-    int inited;
+    // TODO: implement by (busy?)waiting for IP address
+/*    int inited;
     if (use_dhcp) {
         dhcp_start(&netif);
-        
+
         // Wait for an IP Address
         // -1: error, 0: timeout
         inited = netif_up.wait(timeout_ms);
     } else {
         netif_set_up(&netif);
-        
+
         // Wait for the link up
         inited = netif_linked.wait(timeout_ms);
     }
-    
-    return (inited > 0) ? (0) : (-1);
+
+    return (inited > 0) ? (0) : (-1);*/
+    return 0;
 }
 
 int EthernetInterface::disconnect() {
@@ -131,9 +117,9 @@ int EthernetInterface::disconnect() {
     } else {
         netif_set_down(&netif);
     }
-    
+
     eth_arch_disable_interrupts();
-    
+
     return 0;
 }
 
