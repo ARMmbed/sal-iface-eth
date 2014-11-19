@@ -32,6 +32,7 @@ extern "C" {
 void eth_arch_enable_interrupts(void);
 void eth_arch_disable_interrupts(void);
 err_t eth_arch_enetif_init(struct netif *netif);
+void eth_arch_timer_callback(void);
 
 #ifdef __cplusplus
 }

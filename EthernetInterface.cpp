@@ -24,8 +24,10 @@
 #include "lwip/dhcp.h"
 #include "eth_arch.h"
 #include "lwip/tcpip.h"
+#include "lwip/init.h"
 
 #include "mbed.h"
+#include <stdint.h>
 
 /* TCP/IP and Network Interface Initialisation */
 static struct netif netif;
@@ -36,16 +38,24 @@ static char gateway[17] = "\0";
 static char networkmask[17] = "\0";
 static bool use_dhcp = false;
 
+static volatile uint8_t link_up;
+static volatile uint8_t if_up;
+
 static void netif_link_callback(struct netif *netif) {
-    // TODO: implement this
+    link_up = 1;
 }
 
 static void netif_status_callback(struct netif *netif) {
-    // TODO: implement this
+    if (netif_is_up(netif)) {
+        strcpy(ip_addr, inet_ntoa(netif->ip_addr));
+        strcpy(gateway, inet_ntoa(netif->gw));
+        strcpy(networkmask, inet_ntoa(netif->netmask));
+        if_up = 1;
+    }
 }
 
 static void init_netif(ip_addr_t *ipaddr, ip_addr_t *netmask, ip_addr_t *gw) {
-    // TODO: proper initialization
+    lwip_init();
 
     memset((void*) &netif, 0, sizeof(netif));
     netif_add(&netif, ipaddr, netmask, gw, NULL, eth_arch_enetif_init, ip_input);
@@ -92,22 +102,19 @@ int EthernetInterface::connect(unsigned int timeout_ms) {
     eth_arch_enable_interrupts();
 
     // TODO: implement by (busy?)waiting for IP address
-/*    int inited;
+    int inited = 0;
     if (use_dhcp) {
         dhcp_start(&netif);
 
         // Wait for an IP Address
         // -1: error, 0: timeout
-        inited = netif_up.wait(timeout_ms);
+        while (if_up == 0);
     } else {
         netif_set_up(&netif);
-
-        // Wait for the link up
-        inited = netif_linked.wait(timeout_ms);
+        while (link_up == 0);
     }
 
-    return (inited > 0) ? (0) : (-1);*/
-    return 0;
+    return inited;
 }
 
 int EthernetInterface::disconnect() {
@@ -119,7 +126,7 @@ int EthernetInterface::disconnect() {
     }
 
     eth_arch_disable_interrupts();
-
+    if_up = link_up = 0;
     return 0;
 }
 
