@@ -40,6 +40,7 @@ static bool use_dhcp = false;
 
 static volatile uint8_t link_up;
 static volatile uint8_t if_up;
+extern volatile uint8_t allow_net_callbacks;
 
 static void netif_link_callback(struct netif *netif) {
     link_up = 1;
@@ -58,11 +59,13 @@ static void init_netif(ip_addr_t *ipaddr, ip_addr_t *netmask, ip_addr_t *gw) {
     lwip_init();
 
     memset((void*) &netif, 0, sizeof(netif));
-    netif_add(&netif, ipaddr, netmask, gw, NULL, eth_arch_enetif_init, ip_input);
+    netif_add(&netif, ipaddr, netmask, gw, NULL, eth_arch_enetif_init, ethernet_input);
     netif_set_default(&netif);
 
     netif_set_link_callback  (&netif, netif_link_callback);
     netif_set_status_callback(&netif, netif_status_callback);
+
+    allow_net_callbacks = 1;
 }
 
 static void set_mac_address(void) {
