@@ -1,0 +1,20 @@
+
+{
+    "name": "mbed-net-eth",
+    "version": "0.0.0",
+    "description": "",
+    "keywords": [
+    ],
+    "author": "name <email@arm.com>",
+    "repository": {
+        "url": "git@github.com:ARMmbed/mbed-net-eth.git",
+        "type": "git"
+    },
+    "homepage": "https://github.com/ARMmbed/mbed-net-eth",
+    "license": "Apache-2",
+    "dependencies": {
+    },
+    "extraIncludes": ["mbed-net-eth"],
+    "targetDependencies": {
+    }
+}
