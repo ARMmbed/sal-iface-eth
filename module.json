@@ -1,20 +1,28 @@
-
 {
-    "name": "mbed-net-eth",
-    "version": "0.0.0",
-    "description": "",
-    "keywords": [
-    ],
-    "author": "name <email@arm.com>",
-    "repository": {
-        "url": "git@github.com:ARMmbed/mbed-net-eth.git",
-        "type": "git"
-    },
-    "homepage": "https://github.com/ARMmbed/mbed-net-eth",
-    "license": "Apache-2",
-    "dependencies": {
-    },
-    "extraIncludes": ["mbed-net-eth"],
-    "targetDependencies": {
+  "name": "mbed-net-eth",
+  "version": "0.0.0",
+  "description": "Ethernet API and HAL headers",
+  "keywords": [
+    "mbed",
+    "network",
+    "ethernet"
+  ],
+  "author": "brendan.moran@arm.com",
+  "licenses": [
+    {
+      "url": "",
+      "type": ""
     }
+  ],
+  "extraIncludes": [
+    "mbed-net-eth"
+  ],
+  "dependencies": {
+    "mbed": "ARMmbed/mbed-sdk"
+  },
+  "targetDependencies": {
+    "lwip-k64f":{
+      "mbed-net-lwip-k64f":"ARMmbed/mbed-net-lwip-k64f"
+    }
+  }
 }

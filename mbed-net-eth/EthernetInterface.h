@@ -80,10 +80,4 @@ public:
   static char* getNetworkMask();
 };
 
-#include "TCPSocketConnection.h"
-#include "TCPSocketServer.h"
-
-#include "Endpoint.h"
-#include "UDPSocket.h"
-
 #endif /* ETHERNETINTERFACE_H_ */
