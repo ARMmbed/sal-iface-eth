@@ -1,7 +1,7 @@
 {
-  "name": "mbed-net-eth",
+  "name": "mbed-net-lwip-eth",
   "version": "0.0.0",
-  "description": "Ethernet API and HAL headers",
+  "description": "Ethernet API and HAL headers for LwIP",
   "keywords": [
     "mbed",
     "network",
@@ -15,10 +15,11 @@
     }
   ],
   "extraIncludes": [
-    "mbed-net-eth"
+    "mbed-net-lwip-eth"
   ],
   "dependencies": {
-    "mbed": "ARMmbed/mbed-sdk"
+    "mbed": "ARMmbed/mbed-sdk",
+    "mbed-net-lwip": "ARMmbed/mbed-net-lwip"
   },
   "targetDependencies": {
     "lwip-k64f":{
