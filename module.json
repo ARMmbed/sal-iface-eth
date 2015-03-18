@@ -10,8 +10,8 @@
   "author": "brendan.moran@arm.com",
   "licenses": [
     {
-      "url": "",
-      "type": ""
+      "url": "http://developer.mbed.org/handbook/MIT-Licence",
+      "type": "MIT"
     }
   ],
   "extraIncludes": [
