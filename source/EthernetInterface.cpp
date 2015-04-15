@@ -43,6 +43,7 @@ static volatile uint8_t if_up;
 extern volatile uint8_t allow_net_callbacks;
 
 static void netif_link_callback(struct netif *netif) {
+    (void) netif;
     link_up = 1;
 }
 
@@ -102,6 +103,7 @@ int EthernetInterface::init(const char* ip, const char* mask, const char* gatewa
 }
 
 int EthernetInterface::connect(unsigned int timeout_ms) {
+    (void) timeout_ms;
     eth_arch_enable_interrupts();
 
     // TODO: implement by (busy?)waiting for IP address
@@ -148,5 +150,3 @@ char* EthernetInterface::getGateway() {
 char* EthernetInterface::getNetworkMask() {
     return networkmask;
 }
-
-
