@@ -1,6 +1,6 @@
 {
   "name": "mbed-net-lwip-eth",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Ethernet API and HAL headers for LwIP",
   "private": true,
   "keywords": [
