@@ -16,7 +16,7 @@
     }
   ],
   "extraIncludes": [
-    "mbed-net-lwip-eth"
+    "sal-iface-eth"
   ],
   "dependencies": {
     "mbed-drivers": "*",
