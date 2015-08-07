@@ -1,5 +1,5 @@
 {
-  "name": "mbed-net-lwip-eth",
+  "name": "sal-iface-eth",
   "version": "0.0.4",
   "description": "Ethernet API and HAL headers for LwIP",
   "private": true,
@@ -19,7 +19,7 @@
     "mbed-net-lwip-eth"
   ],
   "dependencies": {
-    "mbed-core": "*",
-    "mbed-net-lwip": "~0.1.1"
+    "mbed-drivers": "*",
+    "sal-stack-lwip": "~0.1.1"
   }
 }
