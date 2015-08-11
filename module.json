@@ -9,12 +9,7 @@
     "ethernet"
   ],
   "author": "brendan.moran@arm.com",
-  "licenses": [
-    {
-      "url": "http://developer.mbed.org/handbook/MIT-Licence",
-      "type": "MIT"
-    }
-  ],
+  "license": "Apache-2.0",
   "extraIncludes": [
     "sal-iface-eth"
   ],
