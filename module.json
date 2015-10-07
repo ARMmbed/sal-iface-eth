@@ -1,6 +1,6 @@
 {
   "name": "sal-iface-eth",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "Ethernet API and HAL headers for LwIP",
   "keywords": [
     "mbed",
