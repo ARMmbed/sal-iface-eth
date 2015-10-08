@@ -1,6 +1,6 @@
 {
   "name": "sal-iface-eth",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Ethernet API and HAL headers for LwIP",
   "keywords": [
     "mbed",
@@ -14,6 +14,6 @@
   ],
   "dependencies": {
     "mbed-drivers": "*",
-    "sal-stack-lwip": "~0.3.0"
+    "sal-stack-lwip": "~0.4.0"
   }
 }
