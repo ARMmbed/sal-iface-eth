@@ -5,7 +5,8 @@
   "keywords": [
     "mbed",
     "network",
-    "ethernet"
+    "ethernet",
+    "mbed-official"
   ],
   "author": "brendan.moran@arm.com",
   "license": "Apache-2.0",
@@ -14,6 +15,6 @@
   ],
   "dependencies": {
     "mbed-drivers": "*",
-    "sal-stack-lwip": "~0.4.0"
+    "sal-stack-lwip": "^1.0.0"
   }
 }
