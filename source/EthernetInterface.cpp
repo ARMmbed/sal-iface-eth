@@ -25,7 +25,7 @@
 #include "lwip/tcpip.h"
 #include "lwip/init.h"
 
-#include "mbed.h"
+#include "mbed-drivers/mbed.h"
 #include <stdint.h>
 
 /* TCP/IP and Network Interface Initialisation */
@@ -37,9 +37,16 @@ static char gateway[17] = "\0";
 static char networkmask[17] = "\0";
 static bool use_dhcp = false;
 
-static volatile uint8_t link_up;
-static volatile uint8_t if_up;
+static volatile int8_t link_up;
+static volatile int8_t if_up;
 extern volatile uint8_t allow_net_callbacks;
+
+static mbed::Timeout _timeout;
+
+static void connect_abort() {
+    EthernetInterface::disconnect();
+    link_up = if_up = -1;
+}
 
 static void netif_link_callback(struct netif *netif) {
     (void) netif;
@@ -102,11 +109,9 @@ int EthernetInterface::init(const char* ip, const char* mask, const char* gatewa
 }
 
 int EthernetInterface::connect(unsigned int timeout_ms) {
-    (void) timeout_ms;
     eth_arch_enable_interrupts();
+    _timeout.attach_us(connect_abort, timeout_ms * 1000);
 
-    // TODO: implement by (busy?)waiting for IP address
-    int inited = 0;
     if (use_dhcp) {
         dhcp_start(&netif);
 
@@ -117,8 +122,20 @@ int EthernetInterface::connect(unsigned int timeout_ms) {
         netif_set_up(&netif);
         while (link_up == 0);
     }
+    _timeout.detach();
 
-    return inited;
+#define min(A,B) \
+    ((A) < (B) ? (A) : (B))
+#define max(A,B) \
+    ((A) > (B) ? (A) : (B))
+
+    if (min(link_up, if_up) < 0) {
+        return min(link_up, if_up);
+    } else if ((link_up == 0) && (if_up == 0)) {
+        return 0;
+    } else {
+        return max(link_up, if_up);
+    }
 }
 
 int EthernetInterface::disconnect() {
