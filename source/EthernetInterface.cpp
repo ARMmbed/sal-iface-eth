@@ -124,17 +124,12 @@ int EthernetInterface::connect(unsigned int timeout_ms) {
     }
     _timeout.detach();
 
-#define min(A,B) \
-    ((A) < (B) ? (A) : (B))
-#define max(A,B) \
-    ((A) > (B) ? (A) : (B))
-
-    if (min(link_up, if_up) < 0) {
-        return min(link_up, if_up);
-    } else if ((link_up == 0) && (if_up == 0)) {
-        return 0;
+    if (link_up < 0 || if_up < 0) {
+        return -1;
+    } else if (link_up == 0 && if_up == 0) {
+        return -1;
     } else {
-        return max(link_up, if_up);
+        return 0;
     }
 }
 
