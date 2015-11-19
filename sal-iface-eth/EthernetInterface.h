@@ -18,10 +18,6 @@
 #ifndef ETHERNETINTERFACE_H_
 #define ETHERNETINTERFACE_H_
 
-#if !defined(TARGET_LPC1768) && !defined(TARGET_LPC4088) && !defined(TARGET_K64F) && !defined(TARGET_RZ_A1H)
-#error The Ethernet Interface library is not supported on this target
-#endif
-
 #include "lwip/netif.h"
 
  /** Interface using Ethernet to connect to an IP-based network
