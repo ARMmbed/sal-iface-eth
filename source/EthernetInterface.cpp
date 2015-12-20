@@ -26,56 +26,64 @@
 #include "lwip/init.h"
 
 #include "mbed-drivers/mbed.h"
+#include "minar/minar.h"
 #include <stdint.h>
 
 /* TCP/IP and Network Interface Initialisation */
-static struct netif netif;
-
-static char mac_addr[19];
-static char ip_addr[17] = "\0";
-static char gateway[17] = "\0";
-static char networkmask[17] = "\0";
-static bool use_dhcp = false;
-
-static volatile int8_t link_up;
-static volatile int8_t if_up;
 extern volatile uint8_t allow_net_callbacks;
 
-static mbed::Timeout _timeout;
+const uintptr_t netif_offset = (uintptr_t)&(((EthernetInterface*)8)->netif) - (uintptr_t)8;
 
-static void connect_abort() {
-    EthernetInterface::disconnect();
-    link_up = if_up = -1;
+// Dangerous!
+void status_callback(struct netif *netif) {
+    EthernetInterface * eth = (EthernetInterface *)((uintptr_t)netif - netif_offset);
+    eth->netif_status_callback();
 }
-
-static void netif_link_callback(struct netif *netif) {
-    (void) netif;
-    link_up = 1;
+void link_callback(struct netif *netif) {
+    EthernetInterface * eth = (EthernetInterface *)((uintptr_t)netif - netif_offset);
+    eth->netif_link_callback();
 }
-
-static void netif_status_callback(struct netif *netif) {
-    if (netif_is_up(netif)) {
-        strcpy(ip_addr, inet_ntoa(netif->ip_addr));
-        strcpy(gateway, inet_ntoa(netif->gw));
-        strcpy(networkmask, inet_ntoa(netif->netmask));
-        if_up = 1;
+void EthernetInterface::netif_link_callback() {
+    bool linkUp = netif_is_link_up(&netif);
+    bool ifUp   = netif_is_up(&netif);
+    printf("linkcb: link %s, if %s\r\n", linkUp?"up":"down", ifUp?"up":"down");
+    minar::Scheduler::postCallback(_handler.bind(this, linkUp, ifUp));
+    if (_timeoutHandle) {
+        minar::Scheduler::cancelCallback(_timeoutHandle);
+        _timeoutHandle = minar::callback_handle_t();
     }
 }
 
-static void init_netif(ip_addr_t *ipaddr, ip_addr_t *netmask, ip_addr_t *gw) {
+void EthernetInterface::netif_status_callback() {
+    bool linkUp = netif_is_link_up(&netif);
+    bool ifUp   = netif_is_up(&netif);
+    printf("statuscb: link %s, if %s\r\n", linkUp?"up":"down", ifUp?"up":"down");
+    if (ifUp) {
+        strcpy(ip_addr, inet_ntoa(netif.ip_addr));
+        strcpy(gateway, inet_ntoa(netif.gw));
+        strcpy(networkmask, inet_ntoa(netif.netmask));
+    }
+    minar::Scheduler::postCallback(_handler.bind(this, linkUp, ifUp));
+    if (_timeoutHandle) {
+        minar::Scheduler::cancelCallback(_timeoutHandle);
+        _timeoutHandle = minar::callback_handle_t();
+    }
+}
+
+void EthernetInterface::init_netif(ip_addr_t *ipaddr, ip_addr_t *netmask, ip_addr_t *gw) {
     lwip_init();
 
     memset((void*) &netif, 0, sizeof(netif));
     netif_add(&netif, ipaddr, netmask, gw, NULL, eth_arch_enetif_init, ethernet_input);
     netif_set_default(&netif);
 
-    netif_set_link_callback  (&netif, netif_link_callback);
-    netif_set_status_callback(&netif, netif_status_callback);
+    netif_set_link_callback  (&netif, link_callback);
+    netif_set_status_callback(&netif, status_callback);
 
     allow_net_callbacks = 1;
 }
 
-static void set_mac_address(void) {
+void set_mac_address(char * mac_addr) {
 #if (MBED_MAC_ADDRESS_SUM != MBED_MAC_ADDR_INTERFACE)
     snprintf(mac_addr, 19, "%02x:%02x:%02x:%02x:%02x:%02x", MBED_MAC_ADDR_0, MBED_MAC_ADDR_1, MBED_MAC_ADDR_2,
              MBED_MAC_ADDR_3, MBED_MAC_ADDR_4, MBED_MAC_ADDR_5);
@@ -86,9 +94,15 @@ static void set_mac_address(void) {
 #endif
 }
 
+EthernetInterface::EthernetInterface() :
+    use_dhcp(false)
+{
+    ip_addr[0] = gateway[0] = networkmask[0] = '\0';
+}
+
 int EthernetInterface::init() {
     use_dhcp = true;
-    set_mac_address();
+    set_mac_address(mac_addr);
     init_netif(NULL, NULL, NULL);
     return 0;
 }
@@ -96,7 +110,7 @@ int EthernetInterface::init() {
 int EthernetInterface::init(const char* ip, const char* mask, const char* gateway) {
     use_dhcp = false;
 
-    set_mac_address();
+    set_mac_address(mac_addr);
     strcpy(ip_addr, ip);
 
     ip_addr_t ip_n, mask_n, gateway_n;
@@ -108,32 +122,34 @@ int EthernetInterface::init(const char* ip, const char* mask, const char* gatewa
     return 0;
 }
 
-int EthernetInterface::connect(unsigned int timeout_ms) {
+void EthernetInterface::connect(StatusChangeHandler_t handler, unsigned int timeout_ms) {
     eth_arch_enable_interrupts();
-    _timeout.attach_us(connect_abort, timeout_ms * 1000);
-
+    _timeoutHandle = minar::Scheduler::postCallback(this,&EthernetInterface::disconnect)
+        .delay(minar::milliseconds(timeout_ms))
+        .getHandle();
+    _handler = handler;
     if (use_dhcp) {
         dhcp_start(&netif);
 
         // Wait for an IP Address
         // -1: error, 0: timeout
-        while (if_up == 0);
+        // while (if_up == 0);
     } else {
         netif_set_up(&netif);
-        while (link_up == 0);
+        // while (link_up == 0);
     }
-    _timeout.detach();
-
-    if (link_up < 0 || if_up < 0) {
-        return -1;
-    } else if (link_up == 0 && if_up == 0) {
-        return -1;
-    } else {
-        return 0;
-    }
+    // _timeout.detach();
+    //
+    // if (link_up < 0 || if_up < 0) {
+    //     return -1;
+    // } else if (link_up == 0 && if_up == 0) {
+    //     return -1;
+    // } else {
+    //     return 0;
+    // }
 }
 
-int EthernetInterface::disconnect() {
+void EthernetInterface::disconnect() {
     if (use_dhcp) {
         dhcp_release(&netif);
         dhcp_stop(&netif);
@@ -143,7 +159,6 @@ int EthernetInterface::disconnect() {
 
     eth_arch_disable_interrupts();
     if_up = link_up = 0;
-    return 0;
 }
 
 char* EthernetInterface::getMACAddress() {

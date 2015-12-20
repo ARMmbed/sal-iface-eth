@@ -15,6 +15,7 @@
   ],
   "dependencies": {
     "mbed-drivers": "*",
-    "sal-stack-lwip": "^1.0.0"
+    "sal-stack-lwip": "^1.0.0",
+    "minar" : "^1.0.1"
   }
 }
