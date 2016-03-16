@@ -18,7 +18,8 @@
 #ifndef ETHERNETINTERFACE_H_
 #define ETHERNETINTERFACE_H_
 
-#if !defined(TARGET_LPC1768) && !defined(TARGET_LPC4088) && !defined(TARGET_K64F) && !defined(TARGET_RZ_A1H)
+#if !defined(TARGET_LPC1768) && !defined(TARGET_LPC4088) && !defined(TARGET_K64F) && !defined(TARGET_RZ_A1H) \
+    && !defined(TARGET_LIKE_NUC472)
 #error The Ethernet Interface library is not supported on this target
 #endif
 
