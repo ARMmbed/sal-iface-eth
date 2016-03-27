@@ -24,59 +24,81 @@
 #endif
 
 #include "lwip/netif.h"
+#include "minar/minar.h"
+#include "core-util/FunctionPointer.h"
 
  /** Interface using Ethernet to connect to an IP-based network
  *
  */
 class EthernetInterface {
 public:
+  typedef mbed::util::FunctionPointer3<void, EthernetInterface *, bool, bool> StatusChangeHandler_t;
+  EthernetInterface();
   /** Initialize the interface with DHCP.
   * Initialize the interface and configure it to use DHCP (no connection at this point).
   * \return 0 on success, a negative number on failure
   */
-  static int init(); //With DHCP
+  int init(); //With DHCP
 
-  /** Initialize the interface with a static IP address.
-  * Initialize the interface and configure it with the following static configuration (no connection at this point).
+  /** Initialize the interface with a IP address.
+  * Initialize the interface and configure it with the following configuration (no connection at this point).
   * \param ip the IP address to use
   * \param mask the IP address mask
   * \param gateway the gateway to use
   * \return 0 on success, a negative number on failure
   */
-  static int init(const char* ip, const char* mask, const char* gateway);
+  int init(const char* ip, const char* mask, const char* gateway);
 
   /** Connect
   * Bring the interface up, start DHCP if needed.
   * \param   timeout_ms  timeout in ms (default: (15)s).
-  * \return 0 on success, a negative number on failure
   */
-  static int connect(unsigned int timeout_ms=15000);
+  void connect(StatusChangeHandler_t handler, unsigned int timeout_ms=15000);
 
   /** Disconnect
   * Bring the interface down
   * \return 0 on success, a negative number on failure
   */
-  static int disconnect();
+  void disconnect();
 
   /** Get the MAC address of your Ethernet interface
    * \return a pointer to a string containing the MAC address
    */
-  static char* getMACAddress();
+  char* getMACAddress();
 
   /** Get the IP address of your Ethernet interface
    * \return a pointer to a string containing the IP address
    */
-  static char* getIPAddress();
+  char* getIPAddress();
 
   /** Get the Gateway address of your Ethernet interface
    * \return a pointer to a string containing the Gateway address
    */
-  static char* getGateway();
+  char* getGateway();
 
   /** Get the Network mask of your Ethernet interface
    * \return a pointer to a string containing the Network mask
    */
-  static char* getNetworkMask();
+  char* getNetworkMask();
+  void netif_status_callback();
+  void netif_link_callback();
+  struct netif netif;
+protected:
+  void connect_abort();
+  void init_netif(ip_addr_t *ipaddr, ip_addr_t *netmask, ip_addr_t *gw);
+protected:
+
+  char mac_addr[19];
+  char ip_addr[17];
+  char gateway[17];
+  char networkmask[17];
+  bool use_dhcp = false;
+
+  volatile int8_t link_up;
+  volatile int8_t if_up;
+
+  minar::callback_handle_t _timeoutHandle;
+  StatusChangeHandler_t _handler;
 };
 
 #endif /* ETHERNETINTERFACE_H_ */
